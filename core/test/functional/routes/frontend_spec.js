@@ -79,6 +79,15 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
+            it('should 404 for unknown tag with invalid characters', function (done) {
+                console.log('-----------ELO')
+                request.get('/tag/~$pectacular~/')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
             it('should 404 for unknown author', function (done) {
                 request.get('/author/spectacular/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
