@@ -80,7 +80,6 @@ describe('Frontend Routing', function () {
             });
 
             it('should 404 for unknown tag with invalid characters', function (done) {
-                console.log('-----------ELO')
                 request.get('/tag/~$pectacular~/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
