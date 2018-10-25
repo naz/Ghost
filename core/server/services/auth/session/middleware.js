@@ -49,7 +49,13 @@ const getSession = (req, res, next) => {
 };
 
 const createSession = (req, res, next) => {
-    getSession(req, res, function () {
+    getSession(req, res, function (err) {
+        // if (err) {
+        //     return next(new common.errors.IncorrectUsageError({
+        //         message: common.i18n.t('errors.middleware.auth.unknownOrigin')
+        //     }));
+        // }
+
         const origin = getOrigin(req);
         if (!origin) {
             return next(new common.errors.BadRequestError({
