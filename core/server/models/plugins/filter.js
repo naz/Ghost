@@ -1,10 +1,91 @@
 var _ = require('lodash'),
     gql = require('ghost-gql'),
+    nql = require('@nexes/nql'),
     common = require('../../lib/common'),
     filter,
     filterUtils;
 
 filterUtils = {
+    getFilterKeys: (query) => {
+        const tokens = nql(query).lex();
+
+        return tokens
+            .filter(t => t.token === 'PROP')
+            .map(t => t.matched);
+    },
+
+    reduceFilters: (primary, secondary) => {
+        if (!primary || !secondary) {
+            return secondary;
+        }
+
+        const primaryKeys = filterUtils.getFilterKeys(primary);
+        let reducedFilter = secondary;
+
+        primaryKeys.forEach((key) => {
+            if (reducedFilter.match(key)) {
+                // matches:
+                // - 'key:customFilter'
+                // - 'key:customFilter,'
+                // - 'key:customFilter+'
+                const replace = `${key}\\w*(\\,|\\+)?`;
+                const re = new RegExp(replace,'g');
+                reducedFilter = reducedFilter.replace(re, '');
+            }
+        });
+
+        const conjunctionEnding = /(,|\+)$/;
+        return reducedFilter.replace(conjunctionEnding, '');
+    },
+
+    /**
+     * ## Merge Filters
+     * Util to combine the enforced, default and custom filters such that they behave accordingly
+     *
+     * enforced - filters which must ALWAYS be applied
+     * defaults - filters which must be applied if a matching filter isn't provided
+     * custom - custom filters which are additional
+     * extra - filters coming from model filter aliases
+     */
+    mergeFilters: ({enforced, defaults, custom, extra} = {}) => {
+        if (extra) {
+            // NOTE: check if custom and extra are treated as 'and'?
+            if (custom) {
+                custom += `+${extra}`;
+            } else {
+                custom = extra;
+            }
+        }
+
+        if (custom && !enforced && !defaults) {
+            return custom;
+        }
+
+        let merged = '';
+
+        if (enforced) {
+            merged += enforced;
+        }
+
+        if (custom) {
+            custom = filterUtils.reduceFilters(merged, custom);
+
+            if (custom) {
+                merged = merged ? `${merged}+${custom}` : custom;
+            }
+        }
+
+        if (defaults) {
+            defaults = filterUtils.reduceFilters(merged, defaults);
+
+            if (defaults) {
+                merged = merged ? `${merged}+${defaults}` : defaults;
+            }
+        }
+
+        return merged;
+    },
+
     /**
      * ## Combine Filters
      * Util to combine the enforced, default and custom filters such that they behave accordingly
