@@ -30,7 +30,7 @@ describe('Posts', function () {
     const validKey = localUtils.getValidKey();
 
     it.only('TEST ME', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
+        request.get(localUtils.API.getApiQuery(`posts/?include=tags,authors&key=${validKey}&filter=author:smith-wellingsworth%2Bauthor:slimer-mcectoplasm`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -47,7 +47,15 @@ describe('Posts', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
 
-                console.log(jsonResponse.posts);
+                console.log(`POSTS LENGTH: ${jsonResponse.posts.length}`);
+                console.log('\n');
+                jsonResponse.posts.forEach((post) => {
+                    console.log('######\n');
+                    console.log(`POST: ${post.slug}`);
+                    console.log(`TAGS: ${post.tags.length} -> ${_.map(post.tags, 'slug')}`);
+                    console.log(`AUTHORS: ${post.authors.length} -> ${_.map(post.authors, 'slug')}`);
+                    console.log('\n');
+                });
 
                 done();
             });
