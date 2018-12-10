@@ -30,6 +30,38 @@ describe('Public API', function () {
         configUtils.restore();
     });
 
+    it.only('TEST ME', function (done) {
+        const qs = require('querystring');
+        const filter = qs.stringify({filter: 'updated_at:>\'2018-12-10\''});
+        const query = `posts/?include=tags,authors&client_id=ghost-admin&client_secret=not_available&${filter}`;
+
+        request.get(localUtils.API.getApiQuery(query))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                const jsonResponse = res.body;
+                should.exist(jsonResponse.posts);
+
+                console.log(`POSTS LENGTH: ${jsonResponse.posts.length}`);
+                console.log('\n');
+                jsonResponse.posts.forEach((post) => {
+                    console.log('######\n');
+                    console.log(`POST: ${post.slug} page: ${post.page} status: ${post.status} published_at: ${post.published_at} updated_at: ${post.updated_at} featured: ${post.featured} feature_image: ${post.feature_image} id: ${post.id}`);
+                    console.log(`TAGS: ${post.tags.length} -> ${_.map(post.tags, 'slug')}`);
+                    console.log(`AUTHORS: ${post.authors.length} -> ${_.map(post.authors, 'slug')}`);
+                    console.log('\n');
+                });
+
+                done();
+            });
+    });
+
     it('browse posts', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())

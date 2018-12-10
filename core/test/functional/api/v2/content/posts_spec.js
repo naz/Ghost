@@ -55,7 +55,7 @@ describe('Posts', function () {
                 console.log('\n');
                 jsonResponse.posts.forEach((post) => {
                     console.log('######\n');
-                    console.log(`POST: ${post.slug} featured: ${post.featured} feature_image: ${post.feature_image}`);
+                    console.log(`POST: ${post.slug} page: ${post.page} featured: ${post.featured} feature_image: ${post.feature_image}`);
                     console.log(`TAGS: ${post.tags.length} -> ${_.map(post.tags, 'slug')}`);
                     console.log(`AUTHORS: ${post.authors.length} -> ${_.map(post.authors, 'slug')}`);
                     console.log('\n');
