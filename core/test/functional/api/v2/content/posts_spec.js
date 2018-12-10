@@ -4,6 +4,7 @@ const _ = require('lodash');
 const url = require('url');
 const cheerio = require('cheerio');
 const moment = require('moment');
+const qs = require('querystring');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../../../utils/configUtils');
@@ -30,7 +31,10 @@ describe('Posts', function () {
     const validKey = localUtils.getValidKey();
 
     it.only('TEST ME', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?include=tags,authors&key=${validKey}&filter=author:smith-wellingsworth%2Bauthor:slimer-mcectoplasm`))
+        const filter = qs.stringify({filter: 'author:smith-wellingsworth+author:slimer-mcectoplasm'});
+        const query = `posts/?include=tags,authors&key=${validKey}&${filter}`;
+
+        request.get(localUtils.API.getApiQuery(query))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
