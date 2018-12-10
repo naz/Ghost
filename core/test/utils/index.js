@@ -83,6 +83,7 @@ fixtures = {
 
                 post.tags = postTagRelations;
                 post.authors = postAuthorsRelations;
+
                 return models.Post.add(post, module.exports.context.internal);
             });
         });

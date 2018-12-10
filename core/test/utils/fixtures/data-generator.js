@@ -163,12 +163,6 @@ DataGenerator.Content = {
             name: "#internal",
             slug: "hash-internal",
             visibility: "internal",
-        },
-        {
-            id: ObjectId.generate(),
-            name: "#internal",
-            slug: "hash-internal",
-            visibility: "internal",
         }
     ],
 
@@ -728,7 +722,11 @@ DataGenerator.forKnex = (function () {
         createPost(DataGenerator.Content.posts[4]),
         createPost(DataGenerator.Content.posts[5]),
         createPost(DataGenerator.Content.posts[6]),
-        createPost(DataGenerator.Content.posts[7])
+        createPost(DataGenerator.Content.posts[7]),
+        createPost(DataGenerator.Content.posts[8]),
+        createPost(DataGenerator.Content.posts[9]),
+        createPost(DataGenerator.Content.posts[10]),
+        createPost(DataGenerator.Content.posts[11])
     ];
 
     const tags = [
@@ -737,7 +735,8 @@ DataGenerator.forKnex = (function () {
         createTag(DataGenerator.Content.tags[2]),
         createTag(DataGenerator.Content.tags[3]),
         createTag(DataGenerator.Content.tags[4]),
-        createTag(DataGenerator.Content.tags[5])
+        createTag(DataGenerator.Content.tags[5]),
+        createTag(DataGenerator.Content.tags[6]),
     ];
 
     const roles = [
@@ -963,7 +962,19 @@ DataGenerator.forKnex = (function () {
             post_id: DataGenerator.Content.posts[11].id,
             author_id: DataGenerator.Content.users[2].id,
             sort_order: 0
-        }
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[8].id,
+            author_id: DataGenerator.Content.users[2].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[9].id,
+            author_id: DataGenerator.Content.users[2].id,
+            sort_order: 0
+        },
     ];
 
     const apps = [

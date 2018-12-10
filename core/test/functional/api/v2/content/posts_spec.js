@@ -29,6 +29,30 @@ describe('Posts', function () {
 
     const validKey = localUtils.getValidKey();
 
+    it.only('TEST ME', function (done) {
+        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                res.headers.vary.should.eql('Accept-Encoding');
+                should.exist(res.headers['access-control-allow-origin']);
+                should.not.exist(res.headers['x-cache-invalidate']);
+
+                const jsonResponse = res.body;
+                should.exist(jsonResponse.posts);
+
+                console.log(jsonResponse.posts);
+
+                done();
+            });
+    });
+
     it('browse posts', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
