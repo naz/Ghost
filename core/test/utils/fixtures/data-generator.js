@@ -91,7 +91,25 @@ DataGenerator.Content = {
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Welcome to my invisible post!</h1>'),
             status: 'scheduled',
             published_at: moment().add(2, 'days').toDate()
-        }
+        },
+        {
+            id: ObjectId.generate(),
+            title: 'post with multiple tags',
+            slug: 'post-with-multiple-tags',
+            mobiledoc: DataGenerator.markdownToMobiledoc('## testing\n\nmctesters\n\n- test\n- line\n- items'),
+            html: '<h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n',
+            published_at: new Date('2018-01-03'),
+            uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d'
+        },
+        {
+            id: ObjectId.generate(),
+            title: 'post with INTERNAL tag',
+            slug: 'post-with-internal-tag',
+            mobiledoc: DataGenerator.markdownToMobiledoc('## testing\n\nmctesters\n\n- test\n- line\n- items'),
+            html: '<h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n',
+            published_at: new Date('2018-01-04'),
+            uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d'
+        },
     ],
 
     tags: [
@@ -120,6 +138,17 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             name: 'injection',
             slug: 'injection'
+        },
+        {
+            id: ObjectId.generate(),
+            name: "tag that is never used",
+            slug: "never-used",
+        },
+        {
+            id: ObjectId.generate(),
+            name: "#internal",
+            slug: "hash-internal",
+            visibility: "internal",
         }
     ],
 
@@ -687,7 +716,8 @@ DataGenerator.forKnex = (function () {
         createTag(DataGenerator.Content.tags[1]),
         createTag(DataGenerator.Content.tags[2]),
         createTag(DataGenerator.Content.tags[3]),
-        createTag(DataGenerator.Content.tags[4])
+        createTag(DataGenerator.Content.tags[4]),
+        createTag(DataGenerator.Content.tags[5])
     ];
 
     const roles = [
@@ -779,6 +809,30 @@ DataGenerator.forKnex = (function () {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[3].id,
             tag_id: DataGenerator.Content.tags[3].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[8].id,
+            tag_id: DataGenerator.Content.tags[3].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[8].id,
+            tag_id: DataGenerator.Content.tags[4].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[8].id,
+            tag_id: DataGenerator.Content.tags[5].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[9].id,
+            tag_id: DataGenerator.Content.tags[6].id,
             sort_order: 0
         }
     ];
