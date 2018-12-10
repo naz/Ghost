@@ -99,7 +99,6 @@ DataGenerator.Content = {
             mobiledoc: DataGenerator.markdownToMobiledoc('## testing\n\nmctesters\n\n- test\n- line\n- items'),
             html: '<h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n',
             published_at: new Date('2018-01-03'),
-            uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d'
         },
         {
             id: ObjectId.generate(),
@@ -108,7 +107,22 @@ DataGenerator.Content = {
             mobiledoc: DataGenerator.markdownToMobiledoc('## testing\n\nmctesters\n\n- test\n- line\n- items'),
             html: '<h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n',
             published_at: new Date('2018-01-04'),
-            uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d'
+        },
+        {
+            id: ObjectId.generate(),
+            title: 'post 3 coauthors and slimer-mcectoplasm is the primary one',
+            slug: 'post-with-3-co-authors-and-slimer-mcectoplasm-primary',
+            mobiledoc: DataGenerator.markdownToMobiledoc('## testing\n\nmctesters\n\n- test\n- line\n- items'),
+            html: '<h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n',
+            published_at: new Date('2018-01-05'),
+        },
+        {
+            id: ObjectId.generate(),
+            title: 'post 2 co-authors and 2 tags',
+            slug: 'post-2-co-authors-and-2-tags',
+            mobiledoc: DataGenerator.markdownToMobiledoc('## testing\n\nmctesters\n\n- test\n- line\n- items'),
+            html: '<h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n',
+            published_at: new Date('2018-01-05'),
         },
     ],
 
@@ -143,6 +157,12 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             name: "tag that is never used",
             slug: "never-used",
+        },
+        {
+            id: ObjectId.generate(),
+            name: "#internal",
+            slug: "hash-internal",
+            visibility: "internal",
         },
         {
             id: ObjectId.generate(),
@@ -830,9 +850,24 @@ DataGenerator.forKnex = (function () {
             sort_order: 0
         },
         {
+            // internal tag
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[9].id,
             tag_id: DataGenerator.Content.tags[6].id,
+            sort_order: 0
+        },
+        {
+            // 2tags+2authors
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[11].id,
+            tag_id: DataGenerator.Content.tags[5].id,
+            sort_order: 0
+        },
+        {
+            // 2tags+2authors
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[11].id,
+            tag_id: DataGenerator.Content.tags[4].id,
             sort_order: 0
         }
     ];
@@ -896,6 +931,37 @@ DataGenerator.forKnex = (function () {
             id: ObjectId.generate(),
             post_id: DataGenerator.Content.posts[7].id,
             author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
+        {
+            // slimer-mcectoplasm primary author
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[10].id,
+            author_id: DataGenerator.Content.users[3].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[10].id,
+            author_id: DataGenerator.Content.users[2].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[10].id,
+            author_id: DataGenerator.Content.users[1].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[11].id,
+            author_id: DataGenerator.Content.users[1].id,
+            sort_order: 0
+        },
+        {
+            id: ObjectId.generate(),
+            post_id: DataGenerator.Content.posts[11].id,
+            author_id: DataGenerator.Content.users[2].id,
             sort_order: 0
         }
     ];
