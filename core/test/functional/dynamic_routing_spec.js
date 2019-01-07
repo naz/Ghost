@@ -17,7 +17,7 @@ const should = require('should'),
 
 let request;
 
-describe('Dynamic Routing', function () {
+describe.only('Dynamic Routing', function () {
     let ghostServer;
 
     function doEnd(done) {
