@@ -17,7 +17,7 @@ const should = require('should'),
 
 let request;
 
-describe.only('Dynamic Routing', function () {
+describe.skip('Dynamic Routing', function () {
     let ghostServer;
 
     function doEnd(done) {
