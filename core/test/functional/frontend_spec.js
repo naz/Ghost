@@ -464,7 +464,7 @@ describe('Frontend Routing', function () {
         before(function () {
             configUtils.set('url', 'http://localhost/blog');
 
-            return ghost({forceStart: true, subdir: true})
+            return ghost({subdir: true})
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
 
@@ -542,7 +542,7 @@ describe('Frontend Routing', function () {
         before(function () {
             configUtils.set('url', 'http://localhost/blog/');
 
-            return ghost({forceStart: true, subdir: true})
+            return ghost({subdir: true})
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
@@ -628,7 +628,7 @@ describe('Frontend Routing', function () {
         before(function () {
             configUtils.set('url', 'http://localhost:2370/');
 
-            return ghost({forceStart: true})
+            return ghost()
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
@@ -663,7 +663,7 @@ describe('Frontend Routing', function () {
         before(function () {
             configUtils.set('url', 'http://localhost:2370/');
 
-            return ghost({forceStart: true})
+            return ghost()
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
