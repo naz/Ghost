@@ -384,6 +384,12 @@ User = ghostBookshelf.Model.extend({
             data = _.cloneDeep(dataToClone),
             lookupRole = data.role;
 
+        // Ensure only valid fields/columns are added to query
+        // and append default columns to fetch
+        if (options.columns) {
+            options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+        }
+
         delete data.role;
         data = _.defaults(data || {}, {
             status: 'all'
