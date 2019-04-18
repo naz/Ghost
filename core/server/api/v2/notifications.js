@@ -20,6 +20,14 @@ _private.fetchAllNotifications = () => {
     return allNotifications;
 };
 
+_private.wasSeen = (notification, user) => {
+    if (notification.seenBy === undefined) {
+        return notification.seen;
+    } else {
+        return notification.seenBy.includes(user.id);
+    }
+};
+
 module.exports = {
     docName: 'notifications',
 
@@ -55,11 +63,7 @@ module.exports = {
                     }
                 }
 
-                if (notification.seenBy === undefined) {
-                    return notification.seen !== true;
-                } else {
-                    return notification.seenBy.includes(frame.user.id);
-                }
+                return !_private.wasSeen(notification, frame.user);
             });
 
             return allNotifications;
@@ -176,7 +180,7 @@ module.exports = {
                 }));
             }
 
-            if (notificationToMarkAsSeen.seen) {
+            if (_private.wasSeen(notificationToMarkAsSeen, frame.user)) {
                 return Promise.resolve();
             }
 
