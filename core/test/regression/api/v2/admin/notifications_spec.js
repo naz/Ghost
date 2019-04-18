@@ -4,20 +4,11 @@ const testUtils = require('../../../../utils');
 const config = require('../../../../../server/config');
 const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
-let request;
 
 describe('Notifications API', function () {
-    before(function () {
-        return ghost()
-            .then(function (_ghostServer) {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request);
-            });
-    });
-
     describe('As Editor', function () {
+        let request;
+
         before(function () {
             return ghost()
                 .then(function (_ghostServer) {
@@ -77,6 +68,8 @@ describe('Notifications API', function () {
     });
 
     describe('As Author', function () {
+        let request;
+
         before(function () {
             return ghost()
                 .then(function (_ghostServer) {
