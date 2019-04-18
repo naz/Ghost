@@ -202,6 +202,11 @@ module.exports = {
         }
     },
 
+    /**
+     * Clears all notifications. Method used in tests only
+     *
+     * @private Not exposed over HTTP
+     */
     destroyAll: {
         statusCode: 204,
         permissions: {
