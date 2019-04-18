@@ -25,7 +25,7 @@ module.exports = {
 
     browse: {
         permissions: true,
-        query() {
+        query(frame) {
             let allNotifications = _private.fetchAllNotifications();
             allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
 
@@ -55,7 +55,11 @@ module.exports = {
                     }
                 }
 
-                return notification.seen !== true;
+                if (notification.seenBy === undefined) {
+                    return notification.seen !== true;
+                } else {
+                    return notification.seenBy.includes(frame.user.id);
+                }
             });
 
             return allNotifications;
@@ -178,6 +182,12 @@ module.exports = {
 
             // @NOTE: We don't remove the notifications, because otherwise we will receive them again from the service.
             allNotifications[notificationToMarkAsSeenIndex].seen = true;
+
+            if (!allNotifications[notificationToMarkAsSeenIndex].seenBy) {
+                allNotifications[notificationToMarkAsSeenIndex].seenBy = [];
+            }
+
+            allNotifications[notificationToMarkAsSeenIndex].seenBy.push(frame.user.id);
 
             return api.settings.edit({
                 settings: [{
