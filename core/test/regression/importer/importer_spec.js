@@ -19,6 +19,8 @@ var should = require('should'),
 
     knex = db.knex;
 
+moment.tz.setDefault('UTC');
+
 const exportedLatestBody = () => {
     return _.clone({
         db: [{
