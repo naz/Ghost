@@ -10,7 +10,7 @@ describe('Themes: engines', function () {
     it('no engines', function () {
         const engines = themeEngines.create();
         engines.should.eql({
-            'ghost-api': 'v0.1'
+            'ghost-api': 'v2'
         });
     });
 
@@ -35,7 +35,7 @@ describe('Themes: engines', function () {
             });
 
             engines.should.eql({
-                'ghost-api': 'v0.1'
+                'ghost-api': 'v2'
             });
         });
 
@@ -47,7 +47,7 @@ describe('Themes: engines', function () {
             });
 
             engines.should.eql({
-                'ghost-api': 'v0.1'
+                'ghost-api': 'v2'
             });
         });
 
@@ -131,7 +131,7 @@ describe('Themes: engines', function () {
             });
 
             engines.should.eql({
-                'ghost-api': 'v0.1'
+                'ghost-api': 'v2'
             });
         });
     });
