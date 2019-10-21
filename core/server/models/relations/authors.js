@@ -190,7 +190,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
             /**
              * CASE: `author` was requested, `posts.authors` must exist
-             * @deprecated: `author`, will be removed in Ghost 3.0
+             * @deprecated: `author`, will be removed in Ghost 4.0
              */
             if (this._originalOptions.withRelated && this._originalOptions.withRelated && this._originalOptions.withRelated.indexOf('author') !== -1) {
                 if (!authors.models.length) {
