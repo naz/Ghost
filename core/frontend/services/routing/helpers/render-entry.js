@@ -10,9 +10,9 @@ const debug = require('ghost-ignition').debug('services:routing:helpers:render-p
  */
 module.exports = function renderEntry(req, res) {
     debug('renderEntry called');
-    return function renderEntry(entry) {
+    return function renderEntry(entry, type) {
         // Format data 2 - 1 is in preview/entry
         // Render
-        return renderer(req, res, formatResponse.entry(entry));
+        return renderer(req, res, formatResponse.entry(entry, type), type);
     };
 };

@@ -164,7 +164,7 @@ _private.getTemplateForError = function getTemplateForError(statusCode) {
  * @param {Object} res
  * @param {Object} data
  */
-module.exports.setTemplate = function setTemplate(req, res, data) {
+module.exports.setTemplate = function setTemplate(req, res, data, type) {
     if (res._template && !req.err) {
         return;
     }
@@ -183,7 +183,7 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
     } else if (res.routerOptions.type === 'custom') {
         res._template = _private.pickTemplate(res.routerOptions.templates, res.routerOptions.defaultTemplate);
     } else if (res.routerOptions.type === 'entry') {
-        res._template = _private.getTemplateForEntry(data.post);
+        res._template = _private.getTemplateForEntry(data[type]);
     } else {
         res._template = 'index';
     }

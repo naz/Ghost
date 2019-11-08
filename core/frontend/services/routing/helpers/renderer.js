@@ -13,7 +13,7 @@ module.exports = function renderer(req, res, data) {
     setContext(req, res, data);
 
     // Set template
-    templates.setTemplate(req, res, data);
+    templates.setTemplate(req, res, data, type);
 
     debug('Rendering template: ' + res._template + ' for: ' + req.originalUrl);
     debug('res.locals', res.locals);

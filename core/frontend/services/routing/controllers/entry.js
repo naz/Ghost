@@ -91,7 +91,7 @@ module.exports = function entryController(req, res, next) {
             helpers.secure(req, entry);
 
             const renderer = helpers.renderEntry(req, res);
-            return renderer(entry);
+            return renderer(entry, res.routerOptions.resourceType);
         })
         .catch(helpers.handleError(next));
 };

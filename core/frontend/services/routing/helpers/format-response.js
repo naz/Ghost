@@ -42,10 +42,15 @@ function formatPageResponse(result) {
  *
  * @return {Object} containing page variables
  */
-function formatResponse(post) {
-    return {
-        post: post
+function formatResponse(entry, type) {
+    let singular = type.replace(/s$/i, '');
+    let response = {
+        post: entry
     };
+
+    response[singular] = entry;
+
+    return response;
 }
 
 module.exports = {
