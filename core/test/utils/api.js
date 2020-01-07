@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const url = require('url');
 const moment = require('moment');
+const magicLink = require('@tryghost/magic-link');
 const DataGenerator = require('./fixtures/data-generator');
 const config = require('../../server/config');
 const common = require('../../server/lib/common');
@@ -104,6 +105,30 @@ const login = (request, API_URL) => {
                         message: 'Ghost is redirecting, do you have an instance already running on port 2369?'
                     }));
                 } else if (res.statusCode !== 200 && res.statusCode !== 201) {
+                    return reject(new common.errors.GhostError({
+                        message: res.body.errors[0].message
+                    }));
+                }
+
+                resolve(res.headers['set-cookie']);
+            }, reject);
+    });
+};
+
+const doMemberAuth = (request) => {
+    // 1. Read members_auth_email_secret from settings
+    // 2. Use @tryghost/magic-link to generate a link
+    // 3. Make request to link and store cookies
+    // 4. Use cookies to check frontend response
+
+    const membersAuthEmailSecret = '';
+    const link = magicLink({secret: membersAuthEmailSecret});
+
+    return new Promise(function (resolve, reject) {
+        request.get(link)
+            .set('Origin', config.get('url'))
+            .then(function then(res) {
+                if (res.statusCode !== 200 && res.statusCode !== 201) {
                     return reject(new common.errors.GhostError({
                         message: res.body.errors[0].message
                     }));
