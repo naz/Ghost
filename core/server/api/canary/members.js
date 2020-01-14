@@ -63,10 +63,12 @@ const members = {
         permissions: true,
         async query(frame) {
             try {
-                const member = await membersService.api.members.create(frame.data.members[0], {
-                    sendEmail: frame.options.send_email,
-                    emailType: frame.options.email_type
-                });
+                const member = await models.Member.add(frame.data.members[0], frame.options);
+
+                if (frame.options.send_email) {
+                    await membersService.api.sendEmailWithMagicLink(member.get('email'), frame.options.email_type);
+                }
+
                 return member;
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
