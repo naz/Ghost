@@ -95,7 +95,8 @@ const members = {
         },
         permissions: true,
         async query(frame) {
-            const member = await membersService.api.members.update(frame.data.members[0], frame.options);
+            const member = await models.Member.edit(frame.data.members[0], frame.options);
+
             return member;
         }
     },
