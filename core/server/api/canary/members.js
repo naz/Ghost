@@ -151,7 +151,21 @@ const members = {
         permissions: true,
         async query(frame) {
             frame.options.require = true;
-            await membersService.api.members.destroy(frame.options)
+
+            let member = await models.Member.findOne(frame.data, frame.options);
+
+            if (!member) {
+                throw new common.errors.NotFoundError({
+                    message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                        resource: 'Member'
+                    })
+                });
+            }
+
+            // NOTE: move to a model layer once Members/MemberStripeCustomer relations are in place
+            await membersService.api.members.destroyStripeSubscriptions(member);
+
+            await models.Member.destroy(frame.options)
                 .catch(models.Member.NotFoundError, () => {
                     throw new common.errors.NotFoundError({
                         message: common.i18n.t('errors.api.resource.resourceNotFound', {
