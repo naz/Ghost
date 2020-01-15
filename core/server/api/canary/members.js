@@ -33,12 +33,24 @@ const members = {
         validation: {},
         permissions: true,
         async query(frame) {
-            const member = await membersService.api.members.get(frame.data, frame.options);
+            let member = await models.Member.findOne(frame.data, frame.options);
+
             if (!member) {
                 throw new common.errors.NotFoundError({
                     message: common.i18n.t('errors.api.members.memberNotFound')
                 });
             }
+
+            // NOTE: to be able to extract subscriptions fully need to implement relations
+            //       between members/members_stripe_customers/members_stripe_customers
+            const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
+            member = member.toJSON(frame.options);
+            Object.assign(member, {
+                stripe: {
+                    subscriptions
+                }
+            });
+
             return member;
         }
     },
