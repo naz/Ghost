@@ -19,8 +19,26 @@ const members = {
         ],
         permissions: true,
         validation: {},
-        query(frame) {
-            return membersService.api.members.list(frame.options);
+        async query(frame) {
+            const res = (await models.Member.findPage(frame.options));
+            const members = res.data.map(model => model.toJSON(frame.options));
+
+            // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
+            //       are in place
+            const membersWithSubscriptions = await Promise.all(members.map(async function (member) {
+                const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
+
+                return Object.assign(member, {
+                    stripe: {
+                        subscriptions
+                    }
+                });
+            }));
+
+            return {
+                members: membersWithSubscriptions,
+                meta: res.meta
+            };
         }
     },
 
@@ -41,8 +59,8 @@ const members = {
                 });
             }
 
-            // NOTE: to be able to extract subscriptions fully need to implement relations
-            //       between members/members_stripe_customers/members_stripe_customers
+            // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
+            //       are in place
             const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
             member = member.toJSON(frame.options);
             Object.assign(member, {
