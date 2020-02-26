@@ -75,7 +75,10 @@ module.exports = {
             'public/members.js',
             'application/javascript',
             constants.ONE_YEAR_S
-        ),
+        )
+    ],
+    publicMinified: [
+        shared.middlewares.labs.members,
         shared.middlewares.servePublicFile.createPublicFileMiddleware(
             'public/members.min.js',
             'application/javascript',
