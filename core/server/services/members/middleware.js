@@ -74,12 +74,12 @@ module.exports = {
         shared.middlewares.servePublicFile.createPublicFileMiddleware(
             'public/members.js',
             'application/javascript',
-            constants.ONE_HOUR_S
+            constants.ONE_YEAR_S
         ),
         shared.middlewares.servePublicFile.createPublicFileMiddleware(
             'public/members.min.js',
             'application/javascript',
-            constants.ONE_WEEK_S
+            constants.ONE_YEAR_S
         )
     ],
     createSessionFromToken: [
