@@ -46,7 +46,18 @@ function ensureActiveTheme(req, res, next) {
  * members settings as publicly readable
  */
 function haxGetMembersPriceData() {
-    const defaultPriceData = {monthly: 0, yearly: 0};
+    const CURRENCY_SYMBOLS = {
+        usd: '$',
+        aud: '$',
+        cad: '$',
+        gbp: '£',
+        eur: '€'
+    };
+    const defaultPriceData = {
+        monthly: 0,
+        yearly: 0
+    };
+
     try {
         const membersSettings = settingsCache.get('members_subscription_settings');
         const stripeProcessor = membersSettings.paymentProcessors.find(
@@ -60,6 +71,9 @@ function haxGetMembersPriceData() {
                 [plan.name.toLowerCase()]: dollarAmount
             });
         }, {});
+
+        priceData.currency = stripeProcessor.config.currency || 'usd';
+        priceData.currency_symbol = CURRENCY_SYMBOLS[priceData.currency];
 
         if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
             return priceData;
