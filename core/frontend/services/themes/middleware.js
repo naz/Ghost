@@ -47,11 +47,11 @@ function ensureActiveTheme(req, res, next) {
  */
 function haxGetMembersPriceData() {
     const CURRENCY_SYMBOLS = {
-        usd: '$',
-        aud: '$',
-        cad: '$',
-        gbp: '£',
-        eur: '€'
+        USD: '$',
+        AUD: '$',
+        CAD: '$',
+        GBP: '£',
+        EUR: '€'
     };
     const defaultPriceData = {
         monthly: 0,
@@ -72,7 +72,7 @@ function haxGetMembersPriceData() {
             });
         }, {});
 
-        priceData.currency = stripeProcessor.config.currency || 'usd';
+        priceData.currency = String.prototype.toUpperCase.call(stripeProcessor.config.currency || 'usd');
         priceData.currency_symbol = CURRENCY_SYMBOLS[priceData.currency];
 
         if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
