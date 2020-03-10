@@ -162,6 +162,28 @@ describe('api/v3/content/posts', function () {
             });
     });
 
+    it.only('browse posts with filter on related meta table', function (done) {
+        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=meta_description:-null`))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const jsonResponse = res.body;
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                should.exist(jsonResponse.posts);
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                jsonResponse.posts.should.have.length(2);
+                jsonResponse.posts.filter(p => (p.meta_description === null)).should.have.length(0);
+
+                done();
+            });
+    });
+
     it('browse posts with published and draft status, should not return drafts', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=status:published,status:draft`))
             .expect('Content-Type', /json/)
