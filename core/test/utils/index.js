@@ -168,6 +168,12 @@ fixtures = {
         });
     },
 
+    insertMembers: function insertMembers() {
+        return Promise.map(DataGenerator.forKnex.members, function (member) {
+            return models.Member.add(member, module.exports.context.internal);
+        });
+    },
+
     insertExtraTags: function insertExtraTags(max) {
         max = max || 50;
         var tags = [],
@@ -555,6 +561,9 @@ toDoList = {
     },
     member: function insertMember() {
         return fixtures.insertOne('Member', 'members', 'createMember');
+    },
+    members: function insertMembers() {
+        return fixtures.insertMembers('Member', 'members', 'createMember');
     },
     posts: function insertPostsAndTags() {
         return fixtures.insertPostsAndTags();

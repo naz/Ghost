@@ -1,10 +1,13 @@
 const should = require('should');
+const sinon = require('sinon');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid');
 const moment = require('moment-timezone');
 const testUtils = require('../../../../utils');
 const config = require('../../../../../server/config');
 const models = require('../../../../../server/models');
+const mailgunProvider = require('../../../../../server/services/bulk-email/mailgun');
+const configUtils = require('../../../../utils/configUtils');
 const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 let request;
@@ -20,7 +23,7 @@ describe('Posts API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return localUtils.doAuth(request, 'users:extra', 'posts', 'emails');
+                return localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'members');
             })
             .then(function (cookie) {
                 ownerCookie = cookie;
@@ -393,6 +396,57 @@ describe('Posts API', function () {
                         'code',
                         'id'
                     ]);
+                });
+        });
+    });
+
+    describe('MEGA', function () {
+        let send;
+
+        beforeEach(function () {
+            send = sinon.stub().callsFake((data, callback) => {
+                callback({
+                    data: {}
+                });
+            });
+            const mockMailgun = {
+                messages: function () {
+                    return {
+                        send: send
+                    };
+                }
+            };
+
+            sinon.stub(mailgunProvider, 'getInstance').resolves(mockMailgun);
+            configUtils.set('host_settings:limits:members', 100);
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('sends newsletter email when send_email_when_published flag is present', function () {
+            const draftPost = testUtils.DataGenerator.Content.posts[3];
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${draftPost.id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + draftPost.id + '/?send_email_when_published=true'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                status: 'published',
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
+                .then(() => {
+                    send.called.should.be.true();
                 });
         });
     });

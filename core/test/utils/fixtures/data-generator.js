@@ -750,6 +750,11 @@ DataGenerator.forKnex = (function () {
         createTag(DataGenerator.Content.tags[4])
     ];
 
+    const members = [
+        createMember(DataGenerator.Content.members[0]),
+        createMember(DataGenerator.Content.members[1])
+    ];
+
     const roles = [
         createBasic(DataGenerator.Content.roles[0]),
         createBasic(DataGenerator.Content.roles[1]),
@@ -963,6 +968,7 @@ DataGenerator.forKnex = (function () {
         invites: invites,
         posts: posts,
         tags: tags,
+        members: members,
         posts_tags: posts_tags,
         posts_authors: posts_authors,
         apps: apps,
