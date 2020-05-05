@@ -793,7 +793,7 @@ User = ghostBookshelf.Model.extend({
 
     // Finds the user by email, and checks the password
     // @TODO: shorten this function and rename...
-    check: function check(object) {
+    check: async function check(object) {
         const self = this;
 
         return this.getByEmail(object.email)
@@ -806,7 +806,10 @@ User = ghostBookshelf.Model.extend({
 
                 if (user.isLocked()) {
                     throw new common.errors.NoPermissionError({
-                        message: common.i18n.t('errors.models.user.accountLocked')
+                        message: common.i18n.t('errors.models.user.accountLocked'),
+                        context: {
+                            user_id: user.id
+                        }
                     });
                 }
 

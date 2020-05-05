@@ -35,12 +35,28 @@ const session = {
                     auth.session.createSession(req, res, next);
                 });
             });
-        }).catch((err) => {
+        }).catch(async (err) => {
             if (!common.errors.utils.isIgnitionError(err)) {
                 throw new common.errors.UnauthorizedError({
                     message: common.i18n.t('errors.middleware.auth.accessDenied'),
                     err
                 });
+            }
+
+            if (err.errorType === 'NoPermissionError') {
+                let options = {
+                    filter: `resource_id:${err.context.user_id}`,
+                    limit: 1
+                };
+
+                const action = await models.Action.findPage(options);
+
+                if (action.data && action.data[0].get('event') === 'security') {
+                    // this means the last action stored for the user was "locked" for security reason
+                    // we replace context on current error with whatever is stored in the action context
+                    const linkToSomeMoreInfo = action.data[0].get('context');
+                    err.context = `You have to reset password, blah blah heree's more info: ${linkToSomeMoreInfo}`;
+                }
             }
 
             throw err;
