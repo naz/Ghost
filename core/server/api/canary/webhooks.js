@@ -39,7 +39,18 @@ module.exports = {
     },
 
     edit: {
-        permissions: true,
+        permissions: {
+            before: (frame) => {
+                if (frame.options.context && frame.options.context.api_key.id) {
+                    return models.Webhook.findOne({id: frame.options.id})
+                        .then((webhook) => {
+                            if (webhook.get('integration_id') !== frame.options.context.api_key.id) {
+                                throw new errors.NoPermissionError();
+                            }
+                        });
+                }
+            }
+        },
         data: [
             'name',
             'event',
@@ -82,7 +93,18 @@ module.exports = {
                 }
             }
         },
-        permissions: true,
+        permissions: {
+            before: (frame) => {
+                if (frame.options.context && frame.options.context.api_key.id) {
+                    return models.Webhook.findOne({id: frame.options.id})
+                        .then((webhook) => {
+                            if (webhook.get('integration_id') !== frame.options.context.api_key.id) {
+                                throw new errors.NoPermissionError();
+                            }
+                        });
+                }
+            }
+        },
         query(frame) {
             frame.options.require = true;
 
