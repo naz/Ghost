@@ -6,7 +6,7 @@ const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;
 
-describe('Webhooks API (canary)', function () {
+describe('Webhooks API (v3)', function () {
     let request;
 
     before(function () {
@@ -22,7 +22,7 @@ describe('Webhooks API (canary)', function () {
     it('Can create a webhook using integration', function () {
         let webhookData = {
             event: 'test.create',
-            target_url: 'http://example.com/webhooks/test/extra/canary',
+            target_url: 'http://example.com/webhooks/test/extra/v3',
             integration_id: 'ignore_me',
             name: 'test',
             secret: 'thisissecret',
@@ -30,7 +30,7 @@ describe('Webhooks API (canary)', function () {
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v3/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
             .send({webhooks: [webhookData]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -45,7 +45,7 @@ describe('Webhooks API (canary)', function () {
                 should.exist(jsonResponse.webhooks[0].target_url);
 
                 jsonResponse.webhooks[0].event.should.eql('test.create');
-                jsonResponse.webhooks[0].target_url.should.eql('http://example.com/webhooks/test/extra/canary');
+                jsonResponse.webhooks[0].target_url.should.eql('http://example.com/webhooks/test/extra/v3');
                 jsonResponse.webhooks[0].integration_id.should.eql(testUtils.DataGenerator.Content.api_keys[0].id);
 
                 localUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook');
@@ -86,7 +86,7 @@ describe('Webhooks API (canary)', function () {
                 [createdWebhook] = body.webhooks;
 
                 return request.put(localUtils.API.getApiQuery(`webhooks/${createdWebhook.id}/`))
-                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v3/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
                     .send({
                         webhooks: [{
                             name: 'Edit Test',
@@ -98,7 +98,7 @@ describe('Webhooks API (canary)', function () {
             })
             .then(() => {
                 return request.del(localUtils.API.getApiQuery(`webhooks/${createdWebhook.id}/`))
-                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v3/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
                     .expect(403);
             });
     });
@@ -110,7 +110,7 @@ describe('Webhooks API (canary)', function () {
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', testUtils.DataGenerator.Content.api_keys[1])}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v3/admin/', testUtils.DataGenerator.Content.api_keys[1])}`)
             .send({webhooks: [webhookData]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
