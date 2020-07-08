@@ -33,5 +33,5 @@ module.exports = {
 
     get webhooks() {
         return require('./webhooks');
-    },
+    }
 };
