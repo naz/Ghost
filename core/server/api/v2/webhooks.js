@@ -41,7 +41,7 @@ module.exports = {
     edit: {
         permissions: {
             before: (frame) => {
-                if (frame.options.context && frame.options.context.api_key.id) {
+                if (frame.options.context && frame.options.context.api_key && frame.options.context.api_key.id) {
                     return models.Webhook.findOne({id: frame.options.id})
                         .then((webhook) => {
                             if (webhook.get('integration_id') !== frame.options.context.api_key.id) {
@@ -102,7 +102,7 @@ module.exports = {
         },
         permissions: {
             before: (frame) => {
-                if (frame.options.context && frame.options.context.api_key.id) {
+                if (frame.options.context && frame.options.context.api_key && frame.options.context.api_key.id) {
                     return models.Webhook.findOne({id: frame.options.id})
                         .then((webhook) => {
                             if (webhook.get('integration_id') !== frame.options.context.api_key.id) {
