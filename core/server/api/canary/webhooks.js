@@ -45,7 +45,14 @@ module.exports = {
                     return models.Webhook.findOne({id: frame.options.id})
                         .then((webhook) => {
                             if (webhook.get('integration_id') !== frame.options.context.api_key.id) {
-                                throw new errors.NoPermissionError();
+                                throw new errors.NoPermissionError({
+                                    message: i18n.t('errors.api.webhooks.noPermissionToEdit.message', {
+                                        method: 'edit'
+                                    }),
+                                    context: i18n.t('errors.api.webhooks.noPermissionToEdit.context', {
+                                        method: 'edit'
+                                    })
+                                });
                             }
                         });
                 }
@@ -99,7 +106,14 @@ module.exports = {
                     return models.Webhook.findOne({id: frame.options.id})
                         .then((webhook) => {
                             if (webhook.get('integration_id') !== frame.options.context.api_key.id) {
-                                throw new errors.NoPermissionError();
+                                throw new errors.NoPermissionError({
+                                    message: i18n.t('errors.api.webhooks.noPermissionToEdit.message', {
+                                        method: 'destory'
+                                    }),
+                                    context: i18n.t('errors.api.webhooks.noPermissionToEdit.context', {
+                                        method: 'destroy'
+                                    })
+                                });
                             }
                         });
                 }
