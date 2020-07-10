@@ -4,10 +4,10 @@ const utils = require('../../index');
 
 function setDefaultOrder(frame) {
     if (!frame.options.order && frame.options.filter) {
-        frame.options.orderRaw = slugFilterOrder('users', frame.options.filter);
+        frame.options.autoOrder = slugFilterOrder('users', frame.options.filter);
     }
 
-    if (!frame.options.order && !frame.options.orderRaw) {
+    if (!frame.options.order && !frame.options.autoOrder) {
         frame.options.order = 'name asc';
     }
 }

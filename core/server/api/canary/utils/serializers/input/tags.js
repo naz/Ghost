@@ -7,10 +7,10 @@ function setDefaultOrder(frame) {
     let defaultOrder = 'name asc';
 
     if (!frame.options.order && frame.options.filter) {
-        frame.options.orderRaw = slugFilterOrder('tags', frame.options.filter);
+        frame.options.autoOrder = slugFilterOrder('tags', frame.options.filter);
     }
 
-    if (!frame.options.order && !frame.options.orderRaw) {
+    if (!frame.options.order && !frame.options.autoOrder) {
         frame.options.order = defaultOrder;
     }
 }

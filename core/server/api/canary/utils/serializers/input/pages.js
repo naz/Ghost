@@ -50,10 +50,10 @@ function setDefaultOrder(frame) {
     }
 
     if (!frame.options.order && !includesOrderedRelations && frame.options.filter) {
-        frame.options.orderRaw = slugFilterOrder('posts', frame.options.filter);
+        frame.options.autoOrder = slugFilterOrder('posts', frame.options.filter);
     }
 
-    if (!frame.options.order && !frame.options.orderRaw && !includesOrderedRelations) {
+    if (!frame.options.order && !frame.options.autoOrder && !includesOrderedRelations) {
         frame.options.order = 'title asc';
     }
 }
