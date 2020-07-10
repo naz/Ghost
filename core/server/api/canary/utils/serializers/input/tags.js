@@ -1,25 +1,13 @@
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:input:tags');
 const url = require('./utils/url');
+const slugFilterOrder = require('./utils/slug-filter-order');
 const utils = require('../../index');
 
 function setDefaultOrder(frame) {
     let defaultOrder = 'name asc';
 
     if (!frame.options.order && frame.options.filter) {
-        let orderMatch = frame.options.filter.match(/slug:\s?\[(.*)\]/);
-
-        if (orderMatch) {
-            let orderStuff = orderMatch[1].split(',');
-            let order = 'CASE ';
-
-            orderStuff.forEach((item, index) => {
-                order += `WHEN slug = '${item}' THEN ${index} `;
-            });
-
-            order += 'END ASC';
-
-            frame.options.orderRaw = order;
-        }
+        frame.options.orderRaw = slugFilterOrder('tags', frame.options.filter);
     }
 
     if (!frame.options.order && !frame.options.orderRaw) {
