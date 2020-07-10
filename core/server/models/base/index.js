@@ -802,7 +802,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Object} The filtered results of `options`.
      */
     filterOptions: function filterOptions(unfilteredOptions, methodName, filterConfig) {
-        console.log('unfilteredOptions', unfilteredOptions);
         unfilteredOptions = unfilteredOptions || {};
         filterConfig = filterConfig || {};
 
@@ -908,12 +907,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         if (options.order) {
             options.order = this.parseOrderOption(options.order, options.withRelated);
-        } else if (options.orderRaw) {
-            // Do we need to do anything here?
-            console.log(options.orderRaw);
-        } else if (this.orderDefaultRaw) {
+        } else if (this.orderDefaultRaw && !options.orderRaw) {
             options.orderRaw = this.orderDefaultRaw(options);
-        } else if (this.orderDefaultOptions) {
+        } else if (this.orderDefaultOptions && !options.orderRaw) {
             options.order = this.orderDefaultOptions();
         }
 
