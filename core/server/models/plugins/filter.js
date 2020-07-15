@@ -24,6 +24,13 @@ const RELATIONS = {
         joinTable: 'members_labels',
         joinFrom: 'member_id',
         joinTo: 'label_id'
+    },
+    // NOTE: this is experimental syntax mongo-knex should be implemented first and below would be adjusted to that
+    posts_meta: {
+        tableName: 'posts_meta',
+        type: 'oneToOne',
+        joinTable: 'posts',
+        joinFrom: 'post_id'
     }
 };
 
@@ -53,6 +60,13 @@ const EXPANSIONS = [{
 }, {
     key: 'labels',
     replacement: 'labels.slug'
+}, {
+    // Experimental delete me once 1:1 relation design is done in mongo-knex
+    key: 'meta_title',
+    replacement: 'posts_meta.meta_title'
+}, {
+    key: 'meta_description',
+    replacement: 'posts_meta.meta_description'
 }];
 
 const filter = function filter(Bookshelf) {
