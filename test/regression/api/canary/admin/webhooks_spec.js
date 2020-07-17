@@ -52,6 +52,37 @@ describe('Webhooks API (canary)', function () {
             });
     });
 
+    it('Fails validation for non-lowercase event name', function () {
+        let webhookData = {
+            event: 'tEst.evenT',
+            target_url: 'http://example.com/webhooks/test/extra/1',
+            name: 'test',
+            secret: 'thisissecret',
+            api_version: 'v2'
+        };
+
+        return request.post(localUtils.API.getApiQuery('webhooks/'))
+            .set('Origin', config.get('url'))
+            .send({webhooks: [webhookData]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422);
+    });
+
+    it('Fails validation when required fields are not present', function () {
+        let webhookData = {
+            api_version: 'v2',
+            integration_id: 'dummy'
+        };
+
+        return request.post(localUtils.API.getApiQuery('webhooks/'))
+            .set('Origin', config.get('url'))
+            .send({webhooks: [webhookData]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422);
+    });
+
     it('Integration cannot edit or delete other integration\'s webhook', function () {
         let createdIntegration;
         let createdWebhook;
