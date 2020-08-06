@@ -1,7 +1,9 @@
 // NOTE: We must not cache references to membersService.api
 // as it is a getter and may change during runtime.
 const Promise = require('bluebird');
+const ObjectId = require('bson-objectid');
 const moment = require('moment-timezone');
+const uuid = require('uuid');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 const models = require('../../models');
@@ -427,6 +429,7 @@ const members = {
             method: 'add'
         },
         async query(frame) {
+            console.time('IMPORT_MEMBERS');
             let imported = {
                 count: 0
             };
@@ -439,7 +442,6 @@ const members = {
             // NOTE: custom labels have to be created in advance otherwise there are conflicts
             //       when processing member creation in parallel later on in import process
             const importSetLabels = serializeMemberLabels(frame.data.labels);
-            await findOrCreateLabels(importSetLabels, frame.options);
 
             // NOTE: adding an import label allows for imports to be "undone" via bulk delete
             let importLabel;
@@ -452,10 +454,14 @@ const members = {
                 importSetLabels.push(importLabel);
             }
 
+            const importSetLabelModels = await findOrCreateLabels(importSetLabels, frame.options);
+
             // NOTE: member-specific labels have to be pre-created as they cause conflicts when processed
             //       in parallel
             const memberLabels = serializeMemberLabels(getUniqueMemberLabels(frame.data.members));
-            await findOrCreateLabels(memberLabels, frame.options);
+            const memberLabelModels = await findOrCreateLabels(memberLabels, frame.options);
+
+            const allLabelModels = [...importSetLabelModels, ...memberLabelModels].filter(model => model !== undefined);
 
             return Promise.resolve().then(() => {
                 const sanitized = sanitizeInput(frame.data.members);
@@ -470,59 +476,144 @@ const members = {
                     }));
                 }
 
-                return Promise.map(sanitized, ((entry) => {
-                    const api = require('./index');
-                    entry.labels = (entry.labels && entry.labels.split(',')) || [];
-                    const entryLabels = serializeMemberLabels(entry.labels);
-                    const mergedLabels = _.unionBy(entryLabels, importSetLabels, 'name');
+                const CHUNK_SIZE = 100;
+                const memberBatches = _.chunk(sanitized, CHUNK_SIZE);
 
-                    cleanupUndefined(entry);
+                return Promise.map(memberBatches, async (membersBatch) => {
+                    const mappedMemberBatchData = [];
+                    const mappedMembersLabelsBatchAssociations = [];
 
-                    let subscribed;
-                    if (_.isUndefined(entry.subscribed_to_emails)) {
-                        subscribed = entry.subscribed_to_emails;
-                    } else {
-                        subscribed = (String(entry.subscribed_to_emails).toLowerCase() !== 'false');
-                    }
-
-                    return Promise.resolve(api.members.add.query({
-                        data: {
-                            members: [{
-                                email: entry.email,
-                                name: entry.name,
-                                note: entry.note,
-                                subscribed: subscribed,
-                                stripe_customer_id: entry.stripe_customer_id,
-                                comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
-                                labels: mergedLabels,
-                                created_at: entry.created_at === '' ? undefined : entry.created_at
-                            }]
-                        },
-                        options: {
-                            context: frame.options.context,
-                            options: {send_email: false}
-                        }
-                    })).reflect();
-                }), {concurrency: 10})
-                    .each((inspection) => {
-                        if (inspection.isFulfilled()) {
-                            imported.count = imported.count + 1;
+                    membersBatch.forEach((entry) => {
+                        let subscribed;
+                        if (_.isUndefined(entry.subscribed_to_emails)) {
+                            // model default
+                            subscribed = 'true';
                         } else {
-                            const error = inspection.reason();
+                            subscribed = (String(entry.subscribed_to_emails).toLowerCase() !== 'false');
+                        }
 
-                            // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
-                            //       for this reason we have to make sure any unexpected errors are logged here
-                            if (Array.isArray(error)) {
-                                logging.error(error[0]);
-                                invalid.errors.push(...error);
-                            } else {
-                                logging.error(error);
-                                invalid.errors.push(error);
+                        const entryLabels = serializeMemberLabels(entry.labels);
+                        const mergedLabels = _.unionBy(entryLabels, importSetLabels, 'name');
+
+                        let createdAt = entry.created_at === '' ? undefined : entry.created_at;
+
+                        if (createdAt) {
+                            const date = new Date(createdAt);
+
+                            // CASE: client sends `0000-00-00 00:00:00`
+                            if (isNaN(date)) {
+                                throw new errors.ValidationError({
+                                    message: i18n.t('errors.models.base.invalidDate', {key: 'created_at'}),
+                                    code: 'DATE_INVALID'
+                                });
                             }
 
-                            invalid.count = invalid.count + 1;
+                            createdAt = moment(createdAt).toDate();
+                        } else {
+                            createdAt = new Date();
+                        }
+
+                        // NOTE: redacted copy from models.Base module
+                        const contextUser = (options) => {
+                            options = options || {};
+                            options.context = options.context || {};
+
+                            if (options.context.user || models.Base.Model.isExternalUser(options.context.user)) {
+                                return options.context.user;
+                            } else if (options.context.integration) {
+                                return models.Base.Model.internalUser;
+                            }
+                        };
+
+                        const memberId = ObjectId.generate();
+                        mappedMemberBatchData.push({
+                            id: memberId,
+                            uuid: uuid.v4(), // model default
+                            email: entry.email,
+                            name: entry.name,
+                            note: entry.note,
+                            subscribed: subscribed,
+                            // stripe_customer_id: entry.stripe_customer_id,
+                            // comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
+                            // labels: mergedLabels,
+                            created_at: createdAt,
+                            created_by: String(contextUser(frame.options))
+                        });
+
+                        if (mergedLabels) {
+                            mergedLabels.forEach((label) => {
+                                const matchedLabel = allLabelModels.find(labelModel => labelModel.get('name') === label.name);
+
+                                mappedMembersLabelsBatchAssociations.push({
+                                    id: ObjectId.generate(),
+                                    member_id: memberId,
+                                    label_id: matchedLabel.id,
+                                    sort_order: 0 // NOTE: check if we even handle this atm?
+                                });
+                            });
                         }
                     });
+
+                    await db.knex('members')
+                        .insert(mappedMemberBatchData);
+
+                    await db.knex('members_labels')
+                        .insert(mappedMembersLabelsBatchAssociations);
+                });
+
+                // return Promise.map(sanitized, ((entry) => {
+                //     const api = require('./index');
+                //     entry.labels = (entry.labels && entry.labels.split(',')) || [];
+                //     const entryLabels = serializeMemberLabels(entry.labels);
+                //     const mergedLabels = _.unionBy(entryLabels, importSetLabels, 'name');
+
+                //     cleanupUndefined(entry);
+
+                //     let subscribed;
+                //     if (_.isUndefined(entry.subscribed_to_emails)) {
+                //         subscribed = entry.subscribed_to_emails;
+                //     } else {
+                //         subscribed = (String(entry.subscribed_to_emails).toLowerCase() !== 'false');
+                //     }
+
+                //     return Promise.resolve(api.members.add.query({
+                //         data: {
+                //             members: [{
+                //                 email: entry.email,
+                //                 name: entry.name,
+                //                 note: entry.note,
+                //                 subscribed: subscribed,
+                //                 stripe_customer_id: entry.stripe_customer_id,
+                //                 comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
+                //                 labels: mergedLabels,
+                //                 created_at: entry.created_at === '' ? undefined : entry.created_at
+                //             }]
+                //         },
+                //         options: {
+                //             context: frame.options.context,
+                //             options: {send_email: false}
+                //         }
+                //     })).reflect();
+                // }), {concurrency: 10})
+                //     .each((inspection) => {
+                //         if (inspection.isFulfilled()) {
+                //             imported.count = imported.count + 1;
+                //         } else {
+                //             const error = inspection.reason();
+
+                //             // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
+                //             //       for this reason we have to make sure any unexpected errors are logged here
+                //             if (Array.isArray(error)) {
+                //                 logging.error(error[0]);
+                //                 invalid.errors.push(...error);
+                //             } else {
+                //                 logging.error(error);
+                //                 invalid.errors.push(error);
+                //             }
+
+                //             invalid.count = invalid.count + 1;
+                //         }
+                //     });
             }).then(() => {
                 // NOTE: grouping by context because messages can contain unique data like "customer_id"
                 const groupedErrors = _.groupBy(invalid.errors, 'context');
@@ -547,6 +638,8 @@ const members = {
 
                 invalid.errors = outputErrors;
 
+                console.timeEnd('IMPORT_MEMBERS');
+                console.log(`imported: ${imported.count}; invalid: ${invalid.count}`);
                 return {
                     meta: {
                         stats: {
