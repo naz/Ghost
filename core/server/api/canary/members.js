@@ -126,6 +126,55 @@ const findOrCreateLabels = async (labels, options) => {
     }));
 };
 
+async function addMember(attrs, options) {
+    let model;
+
+    try {
+        model = await models.Member.add(attrs, options);
+
+        const member = model.toJSON(options);
+
+        if (attrs.stripe_customer_id) {
+            if (!membersService.config.isStripeConnected()) {
+                throw new errors.ValidationError({
+                    message: i18n.t('errors.api.members.stripeNotConnected.message'),
+                    context: i18n.t('errors.api.members.stripeNotConnected.context'),
+                    help: i18n.t('errors.api.members.stripeNotConnected.help')
+                });
+            }
+
+            await membersService.api.members.linkStripeCustomer(attrs.stripe_customer_id, member);
+        }
+
+        if (attrs.comped) {
+            await membersService.api.members.setComplimentarySubscription(member);
+        }
+    } catch (error) {
+        if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+            throw new errors.ValidationError({
+                message: i18n.t('errors.api.members.memberAlreadyExists.message'),
+                context: i18n.t('errors.api.members.memberAlreadyExists.context')
+            });
+        }
+
+        // NOTE: failed to link Stripe customer/plan/subscription or have thrown custom Stripe connection error.
+        //       It's a bit ugly doing regex matching to detect errors, but it's the easiest way that works without
+        //       introducing additional logic/data format into current error handling
+        const isStripeLinkingError = error.message && (error.message.match(/customer|plan|subscription/g) || error.context === i18n.t('errors.api.members.stripeNotConnected.context'));
+        if (model && isStripeLinkingError) {
+            if (error.message.indexOf('customer') && error.code === 'resource_missing') {
+                error.message = `Member not imported. ${error.message}`;
+                error.context = i18n.t('errors.api.members.stripeCustomerNotFound.context');
+                error.help = i18n.t('errors.api.members.stripeCustomerNotFound.help');
+            }
+
+            await model.destroy(options);
+        }
+
+        throw error;
+    }
+}
+
 const getUniqueMemberLabels = (members) => {
     const allLabels = [];
 
@@ -427,6 +476,7 @@ const members = {
             method: 'add'
         },
         async query(frame) {
+            console.time('IMPORT_MEMBERS');
             let imported = {
                 count: 0
             };
@@ -471,7 +521,6 @@ const members = {
                 }
 
                 return Promise.map(sanitized, ((entry) => {
-                    const api = require('./index');
                     entry.labels = (entry.labels && entry.labels.split(',')) || [];
                     const entryLabels = serializeMemberLabels(entry.labels);
                     const mergedLabels = _.unionBy(entryLabels, importSetLabels, 'name');
@@ -485,24 +534,16 @@ const members = {
                         subscribed = (String(entry.subscribed_to_emails).toLowerCase() !== 'false');
                     }
 
-                    return Promise.resolve(api.members.add.query({
-                        data: {
-                            members: [{
-                                email: entry.email,
-                                name: entry.name,
-                                note: entry.note,
-                                subscribed: subscribed,
-                                stripe_customer_id: entry.stripe_customer_id,
-                                comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
-                                labels: mergedLabels,
-                                created_at: entry.created_at === '' ? undefined : entry.created_at
-                            }]
-                        },
-                        options: {
-                            context: frame.options.context,
-                            options: {send_email: false}
-                        }
-                    })).reflect();
+                    return Promise.resolve(addMember({
+                        email: entry.email,
+                        name: entry.name,
+                        note: entry.note,
+                        subscribed: subscribed,
+                        stripe_customer_id: entry.stripe_customer_id,
+                        comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
+                        labels: mergedLabels,
+                        created_at: entry.created_at === '' ? undefined : entry.created_at
+                    }, frame.options)).reflect();
                 }), {concurrency: 10})
                     .each((inspection) => {
                         if (inspection.isFulfilled()) {
@@ -546,7 +587,7 @@ const members = {
                 });
 
                 invalid.errors = outputErrors;
-
+                console.timeEnd('IMPORT_MEMBERS');
                 return {
                     meta: {
                         stats: {
