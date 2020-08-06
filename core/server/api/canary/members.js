@@ -69,6 +69,10 @@ const sanitizeInput = (members) => {
 
 function serializeMemberLabels(labels) {
     if (_.isString(labels)) {
+        if (labels === '') {
+            return [];
+        }
+
         return [{
             name: labels.trim()
         }];
@@ -492,6 +496,7 @@ const members = {
                             subscribed = (String(entry.subscribed_to_emails).toLowerCase() !== 'false');
                         }
 
+                        entry.labels = (entry.labels && entry.labels.split(',')) || [];
                         const entryLabels = serializeMemberLabels(entry.labels);
                         const mergedLabels = _.unionBy(entryLabels, importSetLabels, 'name');
 
