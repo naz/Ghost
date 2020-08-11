@@ -600,12 +600,27 @@ const members = {
                     }
 
                     if (membersWithStripeCustomers.length || membersWithComplimentaryPlans.length) {
+                        const deleteMemberKnex = async (id) => {
+                            // TODO: cascading wont work on SQLite needs 2 separate deletes
+                            //       for members_labels and members wrapped into a transaction
+                            const deletedMembersCount = await db.knex('members')
+                                .where('id', id)
+                                .del();
+
+                            if (deletedMembersCount) {
+                                imported.count -= deletedMembersCount;
+                                invalid.count += deletedMembersCount;
+                            }
+                        };
+
                         if (!membersService.config.isStripeConnected()) {
                             const memberIdsToDestroy = _.uniq([
                                 ...membersWithStripeCustomers.map(m => m.id),
                                 ...membersWithComplimentaryPlans.map(m => m.id)
                             ]);
 
+                            // TODO: cascading wont work on SQLite needs 2 separate deletes
+                            //       for members_labels and members wrapped into a transaction
                             await db.knex('members')
                                 .whereIn('id', memberIdsToDestroy)
                                 .del();
@@ -616,6 +631,40 @@ const members = {
                                 context: i18n.t('errors.api.members.stripeNotConnected.context'),
                                 help: i18n.t('errors.api.members.stripeNotConnected.help')
                             }));
+                        } else {
+                            if (membersWithStripeCustomers.length) {
+                                await Promise.map(membersWithStripeCustomers, async (stripeMember) => {
+                                    try {
+                                        await membersService.api.members.linkStripeCustomer(stripeMember.stripe_customer_id, stripeMember);
+                                    } catch (error) {
+                                        if (error.message.indexOf('customer') && error.code === 'resource_missing') {
+                                            error.message = `Member not imported. ${error.message}`;
+                                            error.context = i18n.t('errors.api.members.stripeCustomerNotFound.context');
+                                            error.help = i18n.t('errors.api.members.stripeCustomerNotFound.help');
+                                        }
+                                        logging.error(error);
+                                        invalid.errors.push(error);
+
+                                        await deleteMemberKnex(stripeMember.id);
+                                    }
+                                }, {
+                                    concurrency: 10
+                                });
+                            }
+
+                            if (membersWithComplimentaryPlans.length) {
+                                await Promise.map(membersWithComplimentaryPlans, async (complimentaryMember) => {
+                                    try {
+                                        await membersService.api.members.setComplimentarySubscription(complimentaryMember);
+                                    } catch (error) {
+                                        logging.error(error);
+                                        invalid.errors.push(error);
+                                        await deleteMemberKnex(complimentaryMember.id);
+                                    }
+                                }, {
+                                    concurrency: 10 // TODO: check if this concurrency level doesn't fail rate limits
+                                });
+                            }
                         }
                     }
                 });
