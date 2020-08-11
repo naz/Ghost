@@ -670,60 +670,6 @@ const members = {
                         }
                     }
                 });
-
-                // return Promise.map(sanitized, ((entry) => {
-                //     const api = require('./index');
-                //     entry.labels = (entry.labels && entry.labels.split(',')) || [];
-                //     const entryLabels = serializeMemberLabels(entry.labels);
-                //     const mergedLabels = _.unionBy(entryLabels, importSetLabels, 'name');
-
-                //     cleanupUndefined(entry);
-
-                //     let subscribed;
-                //     if (_.isUndefined(entry.subscribed_to_emails)) {
-                //         subscribed = entry.subscribed_to_emails;
-                //     } else {
-                //         subscribed = (String(entry.subscribed_to_emails).toLowerCase() !== 'false');
-                //     }
-
-                //     return Promise.resolve(api.members.add.query({
-                //         data: {
-                //             members: [{
-                //                 email: entry.email,
-                //                 name: entry.name,
-                //                 note: entry.note,
-                //                 subscribed: subscribed,
-                //                 stripe_customer_id: entry.stripe_customer_id,
-                //                 comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
-                //                 labels: mergedLabels,
-                //                 created_at: entry.created_at === '' ? undefined : entry.created_at
-                //             }]
-                //         },
-                //         options: {
-                //             context: frame.options.context,
-                //             options: {send_email: false}
-                //         }
-                //     })).reflect();
-                // }), {concurrency: 10})
-                //     .each((inspection) => {
-                //         if (inspection.isFulfilled()) {
-                //             imported.count = imported.count + 1;
-                //         } else {
-                //             const error = inspection.reason();
-
-                //             // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
-                //             //       for this reason we have to make sure any unexpected errors are logged here
-                //             if (Array.isArray(error)) {
-                //                 logging.error(error[0]);
-                //                 invalid.errors.push(...error);
-                //             } else {
-                //                 logging.error(error);
-                //                 invalid.errors.push(error);
-                //             }
-
-                //             invalid.count = invalid.count + 1;
-                //         }
-                //     });
             }).then(() => {
                 // NOTE: grouping by context because messages can contain unique data like "customer_id"
                 const groupedErrors = _.groupBy(invalid.errors, 'context');
