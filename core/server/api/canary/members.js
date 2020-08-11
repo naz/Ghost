@@ -533,14 +533,11 @@ const members = {
                         const memberId = ObjectId.generate();
                         mappedMemberBatchData.push({
                             id: memberId,
-                            uuid: uuid.v4(), // model default
+                            uuid: uuid.v4(), // member model default
                             email: entry.email,
                             name: entry.name,
                             note: entry.note,
                             subscribed: subscribed,
-                            // stripe_customer_id: entry.stripe_customer_id,
-                            // comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
-                            // labels: mergedLabels,
                             created_at: createdAt,
                             created_by: String(contextUser(frame.options))
                         });
