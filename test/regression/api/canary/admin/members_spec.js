@@ -11,7 +11,7 @@ const ghost = testUtils.startGhost;
 
 let request;
 
-describe.only('Members API', function () {
+describe('Members API', function () {
     before(function () {
         sinon.stub(labs, 'isSet').withArgs('members').returns(true);
     });
@@ -282,8 +282,8 @@ describe.only('Members API', function () {
                 should.exist(jsonResponse.meta);
                 should.exist(jsonResponse.meta.stats);
 
-                // jsonResponse.meta.stats.imported.count.should.equal(2);
-                // jsonResponse.meta.stats.invalid.count.should.equal(0);
+                jsonResponse.meta.stats.imported.count.should.equal(2);
+                jsonResponse.meta.stats.invalid.count.should.equal(0);
             })
             .then(() => {
                 return request
@@ -314,7 +314,7 @@ describe.only('Members API', function () {
             });
     });
 
-    it.only('Can import CSV with mapped fields', function () {
+    it('Can import CSV with mapped fields', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('mapping[email]', 'correo_electrpnico')
@@ -332,8 +332,8 @@ describe.only('Members API', function () {
                 should.exist(jsonResponse.meta);
                 should.exist(jsonResponse.meta.stats);
 
-                // jsonResponse.meta.stats.imported.count.should.equal(1);
-                // jsonResponse.meta.stats.invalid.count.should.equal(0);
+                jsonResponse.meta.stats.imported.count.should.equal(1);
+                jsonResponse.meta.stats.invalid.count.should.equal(0);
             })
             .then(() => {
                 return request
