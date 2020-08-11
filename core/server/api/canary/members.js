@@ -573,11 +573,31 @@ const members = {
                         }
                     });
 
-                    await db.knex('members')
-                        .insert(mappedMemberBatchData);
+                    try {
+                        // TODO: below inserts most likely need to be wrapped into transaction
+                        //       to avoid creating orphaned member_labels connections
+                        await db.knex('members')
+                            .insert(mappedMemberBatchData);
 
-                    await db.knex('members_labels')
-                        .insert(mappedMembersLabelsBatchAssociations);
+                        await db.knex('members_labels')
+                            .insert(mappedMembersLabelsBatchAssociations);
+
+                        imported.count += mappedMemberBatchData.length;
+                    } catch (error) {
+                        logging.error(error);
+
+                        if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+                            invalid.errors.push(new errors.ValidationError({
+                                message: i18n.t('errors.api.members.memberAlreadyExists.message'),
+                                context: i18n.t('errors.api.members.memberAlreadyExists.context')
+                            }));
+                        } else {
+                            // NOTE: probably need to wrap this error into something more specific e.g. ImportError
+                            invalid.errors.push(error);
+                        }
+
+                        invalid.count += mappedMemberBatchData.length;
+                    }
                 });
 
                 // return Promise.map(sanitized, ((entry) => {
