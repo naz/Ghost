@@ -490,6 +490,8 @@ const members = {
                     const membersWithComplimentaryPlans = [];
 
                     membersBatch.forEach((entry) => {
+                        cleanupUndefined(entry);
+
                         let subscribed;
                         if (_.isUndefined(entry.subscribed_to_emails)) {
                             // model default
