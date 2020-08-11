@@ -693,7 +693,7 @@ const members = {
                                     id: ObjectId.generate(),
                                     member_id: memberId,
                                     label_id: matchedLabel.id,
-                                    sort_order: 0 // NOTE: check if we even handle this atm?
+                                    sort_order: 0 //TODO: implementme
                                 });
                             });
                         }
