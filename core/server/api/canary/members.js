@@ -445,6 +445,145 @@ const members = {
             // NOTE: custom labels have to be created in advance otherwise there are conflicts
             //       when processing member creation in parallel later on in import process
             const importSetLabels = serializeMemberLabels(frame.data.labels);
+            await findOrCreateLabels(importSetLabels, frame.options);
+
+            // NOTE: adding an import label allows for imports to be "undone" via bulk delete
+            let importLabel;
+            if (frame.data.members.length) {
+                const siteTimezone = settingsCache.get('timezone');
+                const name = `Import ${moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm')}`;
+                const result = await findOrCreateLabels([{name}], frame.options);
+                importLabel = result[0] && result[0].toJSON();
+
+                importSetLabels.push(importLabel);
+            }
+
+            // NOTE: member-specific labels have to be pre-created as they cause conflicts when processed
+            //       in parallel
+            const memberLabels = serializeMemberLabels(getUniqueMemberLabels(frame.data.members));
+            await findOrCreateLabels(memberLabels, frame.options);
+
+            return Promise.resolve().then(() => {
+                const sanitized = sanitizeInput(frame.data.members);
+                duplicateStripeCustomerIdCount = frame.data.members.length - sanitized.length;
+                invalid.count += duplicateStripeCustomerIdCount;
+
+                if (duplicateStripeCustomerIdCount) {
+                    invalid.errors.push(new errors.ValidationError({
+                        message: i18n.t('errors.api.members.duplicateStripeCustomerIds.message'),
+                        context: i18n.t('errors.api.members.duplicateStripeCustomerIds.context'),
+                        help: i18n.t('errors.api.members.duplicateStripeCustomerIds.help')
+                    }));
+                }
+
+                return Promise.map(sanitized, ((entry) => {
+                    const api = require('./index');
+                    entry.labels = (entry.labels && entry.labels.split(',')) || [];
+                    const entryLabels = serializeMemberLabels(entry.labels);
+                    const mergedLabels = _.unionBy(entryLabels, importSetLabels, 'name');
+
+                    cleanupUndefined(entry);
+
+                    let subscribed;
+                    if (_.isUndefined(entry.subscribed_to_emails)) {
+                        subscribed = entry.subscribed_to_emails;
+                    } else {
+                        subscribed = (String(entry.subscribed_to_emails).toLowerCase() !== 'false');
+                    }
+
+                    return Promise.resolve(api.members.add.query({
+                        data: {
+                            members: [{
+                                email: entry.email,
+                                name: entry.name,
+                                note: entry.note,
+                                subscribed: subscribed,
+                                stripe_customer_id: entry.stripe_customer_id,
+                                comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
+                                labels: mergedLabels,
+                                created_at: entry.created_at === '' ? undefined : entry.created_at
+                            }]
+                        },
+                        options: {
+                            context: frame.options.context,
+                            options: {send_email: false}
+                        }
+                    })).reflect();
+                }), {concurrency: 10})
+                    .each((inspection) => {
+                        if (inspection.isFulfilled()) {
+                            imported.count = imported.count + 1;
+                        } else {
+                            const error = inspection.reason();
+
+                            // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
+                            //       for this reason we have to make sure any unexpected errors are logged here
+                            if (Array.isArray(error)) {
+                                logging.error(error[0]);
+                                invalid.errors.push(...error);
+                            } else {
+                                logging.error(error);
+                                invalid.errors.push(error);
+                            }
+
+                            invalid.count = invalid.count + 1;
+                        }
+                    });
+            }).then(() => {
+                // NOTE: grouping by context because messages can contain unique data like "customer_id"
+                const groupedErrors = _.groupBy(invalid.errors, 'context');
+                const uniqueErrors = _.uniqBy(invalid.errors, 'context');
+
+                const outputErrors = uniqueErrors.map((error) => {
+                    let errorGroup = groupedErrors[error.context];
+                    let errorCount = errorGroup.length;
+
+                    if (error.message === i18n.t('errors.api.members.duplicateStripeCustomerIds.message')) {
+                        errorCount = duplicateStripeCustomerIdCount;
+                    }
+
+                    // NOTE: filtering only essential error information, so API doesn't leak more error details than it should
+                    return {
+                        message: error.message,
+                        context: error.context,
+                        help: error.help,
+                        count: errorCount
+                    };
+                });
+
+                invalid.errors = outputErrors;
+
+                return {
+                    meta: {
+                        stats: {
+                            imported,
+                            invalid
+                        },
+                        import_label: importLabel
+                    }
+                };
+            });
+        }
+    },
+
+    importCSVBatched: {
+        statusCode: 201,
+        permissions: {
+            method: 'add'
+        },
+        async query(frame) {
+            let imported = {
+                count: 0
+            };
+            let invalid = {
+                count: 0,
+                errors: []
+            };
+            let duplicateStripeCustomerIdCount = 0;
+
+            // NOTE: custom labels have to be created in advance otherwise there are conflicts
+            //       when processing member creation in parallel later on in import process
+            const importSetLabels = serializeMemberLabels(frame.data.labels);
 
             // NOTE: adding an import label allows for imports to be "undone" via bulk delete
             let importLabel;
