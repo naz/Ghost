@@ -624,11 +624,12 @@ const members = {
 
                             // TODO: cascading wont work on SQLite needs 2 separate deletes
                             //       for members_labels and members wrapped into a transaction
-                            await db.knex('members')
+                            const deleteMembersCount = await db.knex('members')
                                 .whereIn('id', memberIdsToDestroy)
                                 .del();
 
-                            invalid.count += memberIdsToDestroy.length;
+                            imported.count -= deleteMembersCount;
+                            invalid.count += deleteMembersCount;
                             invalid.errors.push(new errors.ValidationError({
                                 message: i18n.t('errors.api.members.stripeNotConnected.message'),
                                 context: i18n.t('errors.api.members.stripeNotConnected.context'),
