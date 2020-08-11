@@ -467,7 +467,7 @@ const members = {
 
             const allLabelModels = [...importSetLabelModels, ...memberLabelModels].filter(model => model !== undefined);
 
-            return Promise.resolve().then(() => {
+            return Promise.resolve().then(async () => {
                 const sanitized = sanitizeInput(frame.data.members);
                 duplicateStripeCustomerIdCount = frame.data.members.length - sanitized.length;
                 invalid.count += duplicateStripeCustomerIdCount;
