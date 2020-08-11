@@ -486,6 +486,8 @@ const members = {
                 return Promise.map(memberBatches, async (membersBatch) => {
                     const mappedMemberBatchData = [];
                     const mappedMembersLabelsBatchAssociations = [];
+                    const membersWithStripeCustomers = [];
+                    const membersWithComplimentaryPlans = [];
 
                     membersBatch.forEach((entry) => {
                         let subscribed;
@@ -552,6 +554,21 @@ const members = {
                                     label_id: matchedLabel.id,
                                     sort_order: 0 // NOTE: check if we even handle this atm?
                                 });
+                            });
+                        }
+
+                        if (entry.stripe_customer_id) {
+                            membersWithStripeCustomers.push({
+                                stripe_customer_id: entry.stripe_customer_id,
+                                id: memberId,
+                                email: entry.email
+                            });
+                        }
+
+                        if ((String(entry.complimentary_plan).toLocaleLowerCase() === 'true')) {
+                            membersWithComplimentaryPlans.push({
+                                id: memberId,
+                                email: entry.email
                             });
                         }
                     });
