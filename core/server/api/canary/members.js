@@ -433,7 +433,6 @@ const members = {
             method: 'add'
         },
         async query(frame) {
-            console.time('IMPORT_MEMBERS');
             let imported = {
                 count: 0
             };
@@ -696,8 +695,6 @@ const members = {
 
                 invalid.errors = outputErrors;
 
-                console.timeEnd('IMPORT_MEMBERS');
-                console.log(`imported: ${imported.count}; invalid: ${invalid.count}`);
                 return {
                     meta: {
                         stats: {
