@@ -598,6 +598,26 @@ const members = {
 
                         invalid.count += mappedMemberBatchData.length;
                     }
+
+                    if (membersWithStripeCustomers.length || membersWithComplimentaryPlans.length) {
+                        if (!membersService.config.isStripeConnected()) {
+                            const memberIdsToDestroy = _.uniq([
+                                ...membersWithStripeCustomers.map(m => m.id),
+                                ...membersWithComplimentaryPlans.map(m => m.id)
+                            ]);
+
+                            await db.knex('members')
+                                .whereIn('id', memberIdsToDestroy)
+                                .del();
+
+                            invalid.count += memberIdsToDestroy.length;
+                            invalid.errors.push(new errors.ValidationError({
+                                message: i18n.t('errors.api.members.stripeNotConnected.message'),
+                                context: i18n.t('errors.api.members.stripeNotConnected.context'),
+                                help: i18n.t('errors.api.members.stripeNotConnected.help')
+                            }));
+                        }
+                    }
                 });
 
                 // return Promise.map(sanitized, ((entry) => {
