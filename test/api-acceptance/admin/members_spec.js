@@ -353,6 +353,29 @@ describe('Members API', function () {
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.members);
                         jsonResponse.members.should.have.length(2);
+
+                        const importedMember1 = jsonResponse.members.find(m => m.email === 'jbloggs@example.com');
+                        should.exist(importedMember1);
+                        importedMember1.name.should.equal('joe');
+                        should(importedMember1.note).equal(null);
+                        importedMember1.subscribed.should.equal(true);
+                        importedMember1.labels.length.should.equal(1);
+                        testUtils.API.isISO8601(importedMember1.created_at).should.be.true();
+                        importedMember1.comped.should.equal(false);
+                        importedMember1.stripe.should.not.be.undefined();
+                        importedMember1.stripe.subscriptions.length.should.equal(0);
+
+                        const importedMember2 = jsonResponse.members.find(m => m.email === 'test@example.com');
+                        should.exist(importedMember2);
+                        importedMember2.name.should.equal('test');
+                        should(importedMember2.note).equal('test note');
+                        importedMember2.subscribed.should.equal(false);
+                        importedMember2.labels.length.should.equal(2);
+                        testUtils.API.isISO8601(importedMember2.created_at).should.be.true();
+                        importedMember2.created_at.should.equal('1991-10-02T20:30:31.000Z');
+                        importedMember2.comped.should.equal(false);
+                        importedMember2.stripe.should.not.be.undefined();
+                        importedMember2.stripe.subscriptions.length.should.equal(0);
                     });
             });
     });
