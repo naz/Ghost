@@ -136,7 +136,10 @@ describe('Members API', function () {
     it('Can add', function () {
         const member = {
             name: 'test',
-            email: 'memberTestAdd@test.com'
+            email: 'memberTestAdd@test.com',
+            note: 'test note',
+            subscribed: false,
+            labels: ['test-label']
         };
 
         return request
@@ -155,6 +158,12 @@ describe('Members API', function () {
 
                 jsonResponse.members[0].name.should.equal(member.name);
                 jsonResponse.members[0].email.should.equal(member.email);
+                jsonResponse.members[0].note.should.equal(member.note);
+                jsonResponse.members[0].subscribed.should.equal(member.subscribed);
+                testUtils.API.isISO8601(jsonResponse.members[0].created_at).should.be.true();
+
+                jsonResponse.members[0].labels.length.should.equal(1);
+                jsonResponse.members[0].labels[0].name.should.equal('test-label');
             })
             .then(() => {
                 return request
@@ -170,12 +179,16 @@ describe('Members API', function () {
     it('Can edit by id', function () {
         const memberToChange = {
             name: 'change me',
-            email: 'member2Change@test.com'
+            email: 'member2Change@test.com',
+            note: 'initial note',
+            subscribed: true
         };
 
         const memberChanged = {
             name: 'changed',
-            email: 'cantChangeMe@test.com'
+            email: 'cantChangeMe@test.com',
+            note: 'edited note',
+            subscribed: false
         };
 
         return request
@@ -214,6 +227,8 @@ describe('Members API', function () {
                         jsonResponse.members[0].name.should.equal(memberChanged.name);
                         jsonResponse.members[0].email.should.equal(memberChanged.email);
                         jsonResponse.members[0].email.should.not.equal(memberToChange.email);
+                        jsonResponse.members[0].note.should.equal(memberChanged.note);
+                        jsonResponse.members[0].subscribed.should.equal(memberChanged.subscribed);
                     });
             });
     });
