@@ -1,6 +1,9 @@
 const should = require('should');
 const _ = require('lodash');
 const crypto = require('crypto');
+const fs = require('fs-extra');
+const path = require('path');
+const {config} = require('../../../utils/configUtils');
 const schema = require('../../../../core/server/data/schema');
 const fixtures = require('../../../../core/server/data/schema/fixtures');
 const defaultSettings = require('../../../../core/server/data/schema/default-settings');
@@ -8,7 +11,12 @@ const defaultSettings = require('../../../../core/server/data/schema/default-set
 /**
  * @NOTE
  *
- * If this test fails for you, you have modified the database schema or fixtures or default settings.
+ * If this test fails for you, you have modified one of:
+ * - the database schema
+ * - fixtures
+ * - default settings
+ * - routes.yaml
+ *
  * When you make a change, please test that:
  *
  * 1. A new blog get's installed and the database looks correct and complete.
@@ -24,14 +32,19 @@ describe('DB version integrity', function () {
     const currentSchemaHash = '42a966364eb4b5851e807133374821da';
     const currentFixturesHash = '29148c40dfaf4f828c5fca95666f6545';
     const currentSettingsHash = 'c8daa2c9632bb75f9d60655de09ae3bd';
+    const currentRoutesHash = '6d0c09b4d4929f5247419dde785ab011';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
     it('should not change without fixing this test', function () {
+        const routesPath = path.join(config.getContentPath('settings'), 'routes.yaml');
+        const defaultRoutes = fs.readFileSync(routesPath, 'utf-8');
+
         const tablesNoValidation = _.cloneDeep(schema.tables);
         let schemaHash;
         let fixturesHash;
         let settingsHash;
+        let routesHash;
 
         _.each(tablesNoValidation, function (table) {
             return _.each(table, function (column, name) {
@@ -42,9 +55,11 @@ describe('DB version integrity', function () {
         schemaHash = crypto.createHash('md5').update(JSON.stringify(tablesNoValidation), 'binary').digest('hex');
         fixturesHash = crypto.createHash('md5').update(JSON.stringify(fixtures), 'binary').digest('hex');
         settingsHash = crypto.createHash('md5').update(JSON.stringify(defaultSettings), 'binary').digest('hex');
+        routesHash = crypto.createHash('md5').update(JSON.stringify(defaultRoutes), 'binary').digest('hex');
 
         schemaHash.should.eql(currentSchemaHash);
         fixturesHash.should.eql(currentFixturesHash);
         settingsHash.should.eql(currentSettingsHash);
+        routesHash.should.eql(currentRoutesHash);
     });
 });
