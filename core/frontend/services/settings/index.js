@@ -1,11 +1,15 @@
 const _ = require('lodash');
+const crypto = require('crypto');
 const debug = require('ghost-ignition').debug('frontend:services:settings:index');
 const SettingsLoader = require('./loader');
 const ensureSettingsFiles = require('./ensure-settings');
 
 const errors = require('@tryghost/errors');
 
+let currentRoutesHash;
+
 module.exports = {
+
     init: function () {
         const knownSettings = this.knownSettings();
 
@@ -13,7 +17,11 @@ module.exports = {
 
         // Make sure that supported settings files are available
         // inside of the `content/setting` directory
-        return ensureSettingsFiles(knownSettings);
+        return ensureSettingsFiles(knownSettings)
+            .then((settingResults) => {
+                const routesYaml = settingResults[0];
+                currentRoutesHash = crypto.createHash('md5').update(routesYaml, 'binary').digest('hex');
+            });
     },
 
     /**
@@ -76,5 +84,8 @@ module.exports = {
         });
 
         return settingsToReturn;
-    }
+    },
+
+    getDefaultRoutesHash: () => 'c2830292f2e8f43ec9de27a90aa287b1',
+    getCurrentRoutesHash: () => currentRoutesHash
 };

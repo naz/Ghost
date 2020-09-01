@@ -20,7 +20,7 @@ module.exports = function ensureSettingsFiles(knownSettings) {
     const contentPath = config.getContentPath('settings');
     const defaultSettingsPath = config.get('paths').defaultSettings;
 
-    return Promise.each(knownSettings, function (setting) {
+    return Promise.mapSeries(knownSettings, function (setting) {
         const fileName = `${setting}.yaml`;
         const defaultFileName = `default-${fileName}`;
         const filePath = path.join(contentPath, fileName);
@@ -33,6 +33,7 @@ module.exports = function ensureSettingsFiles(knownSettings) {
                     path.join(contentPath, fileName)
                 ).then(() => {
                     debug(`'${defaultFileName}' copied to ${contentPath}.`);
+                    return fs.readFile(filePath, 'utf8');
                 });
             }).catch((error) => {
                 // CASE: we might have a permission error, as we can't access the directory

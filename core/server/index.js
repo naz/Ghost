@@ -22,6 +22,19 @@ let parentApp;
 const themeService = require('../frontend/services/themes');
 const appService = require('../frontend/services/apps');
 
+async function syncRoutesHashSetting() {
+    const frontendSettings = require('../frontend/services/settings');
+    const settingsCache = require('./services/settings/cache');
+
+    if (settingsCache.get('routes_hash') !== frontendSettings.getCurrentRoutesHash()) {
+        const models = require('./models');
+        return await models.Settings.edit([{
+            key: 'routes_hash',
+            value: frontendSettings.getCurrentRoutesHash()
+        }], {context: {internal: true}});
+    }
+}
+
 function initialiseServices() {
     // CASE: When Ghost is ready with bootstrapping (db migrations etc.), we can trigger the router creation.
     //       Reason is that the routers access the routes.yaml, which shouldn't and doesn't have to be validated to
@@ -30,6 +43,10 @@ function initialiseServices() {
     const routing = require('../frontend/services/routing');
     // We pass the themeService API version here, so that the frontend services are less tightly-coupled
     routing.bootstrap.start(themeService.getApiVersion());
+
+    // NOTE: leaving the call without waiting for the return value because there are no
+    //       clear dependencies waiting for the value to be synced up in the db
+    syncRoutesHashSetting();
 
     const permissions = require('./services/permissions');
     const xmlrpc = require('./services/xmlrpc');
