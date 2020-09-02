@@ -86,6 +86,6 @@ module.exports = {
         return settingsToReturn;
     },
 
-    getDefaultRoutesHash: () => 'c2830292f2e8f43ec9de27a90aa287b1',
+    getDefaultRoutesHash: () => '4d0add93e5114af15a0385c0187204ad',
     getCurrentRoutesHash: () => currentRoutesHash
 };

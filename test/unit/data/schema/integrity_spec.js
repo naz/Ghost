@@ -33,7 +33,7 @@ describe('DB version integrity', function () {
     const currentSchemaHash = '42a966364eb4b5851e807133374821da';
     const currentFixturesHash = '29148c40dfaf4f828c5fca95666f6545';
     const currentSettingsHash = 'c8daa2c9632bb75f9d60655de09ae3bd';
-    const currentRoutesHash = frontendSettings.getDefaultRoutesHash();
+    const currentRoutesHash = '4d0add93e5114af15a0385c0187204ad';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
@@ -62,5 +62,6 @@ describe('DB version integrity', function () {
         fixturesHash.should.eql(currentFixturesHash);
         settingsHash.should.eql(currentSettingsHash);
         routesHash.should.eql(currentRoutesHash);
+        routesHash.should.eql(frontendSettings.getDefaultRoutesHash());
     });
 });
