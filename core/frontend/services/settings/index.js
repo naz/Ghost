@@ -20,7 +20,6 @@ const calculateHash = (data) => {
 };
 
 module.exports = {
-
     init: function () {
         const knownSettings = this.knownSettings();
 
