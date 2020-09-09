@@ -41,7 +41,7 @@ describe('UNIT > Settings Service ensure settings:', function () {
 
             return ensureSettings(['routes', 'globals'])
                 .then(() => {
-                    fs.readFile.calledThrice.should.be.true();
+                    fs.readFile.calledTwice.should.be.true();
                     fs.copy.calledOnce.should.be.true();
                 });
         });
@@ -57,7 +57,7 @@ describe('UNIT > Settings Service ensure settings:', function () {
             fs.readFile.withArgs(expectedDefaultSettingsPath, 'utf8').resolves();
 
             return ensureSettings(['routes']).then(() => {
-                fs.readFile.calledTwice.should.be.true();
+                fs.readFile.calledOnce.should.be.true();
                 fs.copy.calledOnce.should.be.true();
             });
         });
