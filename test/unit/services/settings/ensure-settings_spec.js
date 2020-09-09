@@ -37,7 +37,6 @@ describe('UNIT > Settings Service ensure settings:', function () {
             fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').resolves('content');
             fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/globals.yaml'), 'utf8').rejects(fsError);
             fs.copy.withArgs(expectedDefaultSettingsPath, expectedContentPath).resolves();
-            fs.readFile.withArgs(expectedDefaultSettingsPath, 'utf8').resolves();
 
             return ensureSettings(['routes', 'globals'])
                 .then(() => {
@@ -54,7 +53,6 @@ describe('UNIT > Settings Service ensure settings:', function () {
 
             fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').rejects(fsError);
             fs.copy.withArgs(expectedDefaultSettingsPath, expectedContentPath).resolves();
-            fs.readFile.withArgs(expectedDefaultSettingsPath, 'utf8').resolves();
 
             return ensureSettings(['routes']).then(() => {
                 fs.readFile.calledOnce.should.be.true();
