@@ -7,17 +7,29 @@ const config = require('../../../shared/config');
 const yamlParser = require('./yaml-parser');
 const validate = require('./validate');
 
-/**
- * Reads the desired settings YAML file and passes the
- * file to the YAML parser which then returns a JSON object.
- * @param {String} setting the requested settings as defined in setting knownSettings
- * @returns {Object} settingsFile
- */
-module.exports = function loadSettings(setting) {
+const getSettingFilePath = (setting) => {
     // we only support the `yaml` file extension. `yml` will be ignored.
     const fileName = `${setting}.yaml`;
     const contentPath = config.getContentPath('settings');
     const filePath = path.join(contentPath, fileName);
+
+    return {
+        fileName,
+        contentPath,
+        filePath
+    };
+};
+
+/**
+ * Reads the desired settings YAML file and passes the
+ * file to the YAML parser which then returns a JSON object.
+ * NOTE: loading happens syncronously
+ *
+ * @param {String} setting the requested settings as defined in setting knownSettings
+ * @returns {Object} settingsFile
+ */
+module.exports = function loadSettingsSync(setting) {
+    const {fileName, contentPath, filePath} = getSettingFilePath(setting);
 
     try {
         const file = fs.readFileSync(filePath, 'utf8');
@@ -31,7 +43,10 @@ module.exports = function loadSettings(setting) {
         }
 
         throw new errors.GhostError({
-            message: i18n.t('errors.services.settings.loader', {setting: setting, path: contentPath}),
+            message: i18n.t('errors.services.settings.loader', {
+                setting: setting,
+                path: contentPath
+            }),
             context: filePath,
             err: err
         });
