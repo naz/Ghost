@@ -94,7 +94,9 @@ function doReset(options, tokenParts, settingsAPI) {
 
             if (!tokenIsCorrect) {
                 return Promise.reject(new errors.BadRequestError({
-                    message: i18n.t('errors.api.common.invalidTokenStructure')
+                    message: i18n.t('errors.api.passwordReset.expired.message'),
+                    context: i18n.t('errors.api.passwordReset.expired.context'),
+                    help: i18n.t('errors.api.passwordReset.expired.help')
                 }));
             }
 
