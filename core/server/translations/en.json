@@ -318,6 +318,23 @@
                 "checkEmailConfigInstructions": "Please see {url} for instructions on configuring email.",
                 "notTheBlogOwner": "You are not the site owner."
             },
+            "passwordReset": {
+                "expired": {
+                    "message": "The password reset link has expired.",
+                    "context": "Password reset link token has expired and is no longer valid.",
+                    "help": "Generate new password reset request through the login form."
+                },
+                "invalidToken": {
+                    "message": "The password reset link is invalid.",
+                    "context": "The password reset link has already been used or has an invalid format.",
+                    "help": "Generate new password reset request through the login form."
+                },
+                "corruptedToken": {
+                    "message": "The password reset link is invalid.",
+                    "context": "The password reset link token has invalid structure.",
+                    "help": "Check if invitation link has been fully copied or generate new password reset request through the login form."
+                }
+            },
             "configuration": {
                 "invalidKey": "Invalid key"
             },
