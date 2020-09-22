@@ -319,14 +319,14 @@
             },
             "passwordReset": {
                 "expired": {
-                    "message": "The password reset link has expired.",
-                    "context": "Password reset link token has expired and is no longer valid.",
-                    "help": "Generate new password reset request through the login form."
+                    "message": "Cannot reset password.",
+                    "context": "Password reset link expired.",
+                    "help": "Request a new password reset via the login form."
                 },
                 "invalidToken": {
-                    "message": "The password reset link is invalid.",
-                    "context": "The password reset link has already been used or has an invalid format.",
-                    "help": "Generate new password reset request through the login form."
+                    "message": "Cannot reset password.",
+                    "context": "Password reset link has already been used.",
+                    "help": "Request a new password reset via the login form."
                 },
                 "corruptedToken": {
                     "message": "Cannot reset password.",
