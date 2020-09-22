@@ -48,7 +48,9 @@ function extractTokenParts(options) {
 
     if (!tokenParts) {
         return Promise.reject(new errors.UnauthorizedError({
-            message: i18n.t('errors.api.common.invalidTokenStructure')
+            message: i18n.t('errors.api.passwordReset.corruptedToken.message'),
+            context: i18n.t('errors.api.passwordReset.corruptedToken.context'),
+            help: i18n.t('errors.api.passwordReset.corruptedToken.help')
         }));
     }
 
