@@ -52,6 +52,14 @@ describe('Webhooks API', function () {
                 jsonResponse.webhooks[0].integration_id.should.equal(webhookData.integration_id);
 
                 should.not.exist(res.headers.location);
+            })
+            .then(() => {
+                return request.post(localUtils.API.getApiQuery('webhooks/'))
+                    .set('Origin', config.get('url'))
+                    .send({webhooks: [webhookData]})
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(422);
             });
     });
 
