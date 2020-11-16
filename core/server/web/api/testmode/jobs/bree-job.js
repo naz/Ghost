@@ -2,16 +2,25 @@
 
 const util = require('util');
 const logging = require('../../../../../shared/logging');
+const models = require('../../../../models');
 
 const setTimeoutPromise = util.promisify(setTimeout);
+const internalContext = {context: {internal: true}};
 
 (async () => {
-    // wait for a promise to finish in 5 seconds
-    await setTimeoutPromise(5 * 1000);
-    logging.info('Hello form bree job!');
+    try {
+        await models.init();
+        const tags = await models.Tag.findPage(internalContext);
 
-    // signal to parent that the job is done
-    // if (parentPort) parentPort.postMessage('done');
-    // else
-    process.exit(0);
+        logging.info(`Found ${tags.data.length} tags. First one: ${tags.data[0].toJSON().slug}`);
+
+        // 5 seconds delay
+        await setTimeoutPromise(5 * 1000);
+
+        logging.info('Bree job has completed!');
+        process.exit(0);
+    } catch (err) {
+        logging.error(err);
+        process.exit(1);
+    }
 })();
