@@ -58,13 +58,13 @@ module.exports = {
         codeinjection_foot: {type: 'text', maxlength: 65535, nullable: true},
         custom_template: {type: 'string', maxlength: 100, nullable: true},
         canonical_url: {type: 'text', maxlength: 2000, nullable: true},
+        metadata_id: {type: 'string', maxlength: 24, nullable: true, references: 'metadata.id', unique: true},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['slug', 'type']
         ]
     },
     metadata: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', unique: true},
         og_image: {type: 'string', maxlength: 2000, nullable: true},
         og_title: {type: 'string', maxlength: 300, nullable: true},
         og_description: {type: 'string', maxlength: 500, nullable: true},
