@@ -47,6 +47,7 @@ module.exports = function setupParentApp(options = {}) {
     const backendApp = express('backend');
     backendApp.use('/ghost/api', require('../api')());
     backendApp.use('/ghost/.well-known', require('../well-known')());
+    backendApp.use('/ghost/sso/', require('../sso')());
     backendApp.use('/ghost', require('../../services/auth/session').createSessionFromToken, require('../admin')());
 
     // ADMIN + API
